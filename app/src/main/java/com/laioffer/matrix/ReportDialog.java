@@ -13,10 +13,14 @@ import android.view.ViewAnimationUtils;
 import android.view.Window;
 
 import androidx.annotation.NonNull;
+import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 public class ReportDialog extends Dialog {
     private int cx;
     private int cy;
+    private RecyclerView recyclerView;
+    private ReportRecyclerViewAdapter recyclerViewAdapter;
 
 
     public ReportDialog(@NonNull Context context) {
@@ -52,7 +56,7 @@ public class ReportDialog extends Dialog {
                 return false;
             }
         });
-
+        setupRecyclerView(dialogView);
     }
 
     private void animateDialog(View dialogView, boolean open) {
@@ -81,11 +85,23 @@ public class ReportDialog extends Dialog {
     }
 
     public static ReportDialog newInstance(Context context, int cx, int cy) {
-
         ReportDialog dialog = new ReportDialog(context, R.style.MyAlertDialogStyle);
         dialog.cx = cx;
         dialog.cy = cy;
         return dialog;
+    }
+
+    private void setupRecyclerView(View dialogView) {
+        recyclerView = dialogView.findViewById(R.id.recycler_view);
+        recyclerView.setLayoutManager(new GridLayoutManager(getContext(), 3));
+        recyclerViewAdapter = new ReportRecyclerViewAdapter(getContext(), Config.listItems);
+        recyclerViewAdapter.setClickListener(new ReportRecyclerViewAdapter.OnClickListener() {
+            @Override
+            public void setItem(String item) {
+
+            }
+        });
+        recyclerView.setAdapter(recyclerViewAdapter);
     }
 
 }
