@@ -16,14 +16,11 @@ public class ReportRecyclerViewAdapter extends RecyclerView.Adapter<RecyclerView
 
     private List<Item> list;
     private LayoutInflater layoutInflater;
-
     private OnClickListener onClickListener;
 
     public interface OnClickListener{
         public void setItem(String item);
     }
-
-
 
     public void setClickListener(ReportRecyclerViewAdapter.OnClickListener callback) {
         onClickListener = callback;

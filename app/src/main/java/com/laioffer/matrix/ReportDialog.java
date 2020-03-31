@@ -5,14 +5,23 @@ import android.animation.AnimatorListenerAdapter;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.graphics.Bitmap;
 import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewAnimationUtils;
 import android.view.Window;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ImageView;
+import android.widget.TextView;
+import android.widget.ViewSwitcher;
 
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -21,6 +30,26 @@ public class ReportDialog extends Dialog {
     private int cy;
     private RecyclerView recyclerView;
     private ReportRecyclerViewAdapter recyclerViewAdapter;
+    private ViewSwitcher viewSwitcher;
+    private String mEventype;
+    private String mPrefillText;
+
+    private ImageView mImageCamera;
+    private Button mBackButton;
+    private Button mSendButton;
+    private EditText mCommentEditText;
+    private ImageView mEventTypeImg;
+    private TextView mTypeTextView;
+    private DialogCallBack mDialogCallBack;
+
+    interface DialogCallBack {
+        void onSubmit(String editString, String event_type);
+        void StartCamera();
+    }
+
+    public void setDialogCallBack(DialogCallBack dialogCallBack) {
+        mDialogCallBack = dialogCallBack;
+    }
 
 
     public ReportDialog(@NonNull Context context) {
@@ -57,6 +86,15 @@ public class ReportDialog extends Dialog {
             }
         });
         setupRecyclerView(dialogView);
+        viewSwitcher = (ViewSwitcher) dialogView.findViewById(R.id.viewSwitcher);
+
+        Animation slid_in_left = AnimationUtils.loadAnimation(getContext(),
+                android.R.anim.slide_in_left);
+        Animation slid_out_right = AnimationUtils.loadAnimation(getContext(),
+                android.R.anim.slide_out_right);
+        viewSwitcher.setInAnimation(slid_in_left);
+        viewSwitcher.setOutAnimation(slid_out_right);
+        setUpEventSpecs(dialogView);
     }
 
     private void animateDialog(View dialogView, boolean open) {
@@ -98,10 +136,73 @@ public class ReportDialog extends Dialog {
         recyclerViewAdapter.setClickListener(new ReportRecyclerViewAdapter.OnClickListener() {
             @Override
             public void setItem(String item) {
-
+                showNextViewSwitcher(item);
             }
         });
         recyclerView.setAdapter(recyclerViewAdapter);
     }
+
+    private void showNextViewSwitcher(String item) {
+        mEventype = item;
+        if (viewSwitcher != null) {
+            viewSwitcher.showNext();
+            mTypeTextView.setText(mEventype);
+            mEventTypeImg.setImageDrawable(ContextCompat.getDrawable(getContext(), Config.trafficMap.get(mEventype)));
+        }
+    }
+
+    private void setUpEventSpecs(final View dialogView) {
+        mImageCamera = (ImageView) dialogView.findViewById(R.id.event_camera_img);
+        mBackButton = (Button) dialogView.findViewById(R.id.event_back_button);
+        mSendButton = (Button) dialogView.findViewById(R.id.event_send_button);
+        mCommentEditText = (EditText) dialogView.findViewById(R.id.event_comment);
+        mEventTypeImg = (ImageView) dialogView.findViewById(R.id.event_type_img);
+        mTypeTextView = (TextView) dialogView.findViewById(R.id.event_type);
+        mSendButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mDialogCallBack.onSubmit(mCommentEditText.getText().toString(), mEventype);
+            }
+        });
+        mBackButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                viewSwitcher.showPrevious();
+            }
+        });
+
+        mImageCamera.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                mDialogCallBack.StartCamera();
+            }
+        });
+
+    }
+    public void updateImage(Bitmap bitmap) {
+        mImageCamera.setImageBitmap(bitmap);
+    }
+
+    public void setVocieInfor(String event_type, String prefillText) {
+        mEventype = event_type;
+        mPrefillText = prefillText;
+
+    }
+
+
+
+
+    @Override
+    public void onStart() {
+        super.onStart();
+        if (mEventype != null) {
+            showNextViewSwitcher(mEventype);
+        }
+        if (mPrefillText != null) {
+            mCommentEditText.setText(mPrefillText);
+        }
+    }
+
+
 
 }
